@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<Module>
+	<!-- RollingStoneGoogleGadget Version 1.7 -->
+	<ModulePrefs 
+		title="RS Album Reviews" 
+      	directory_title="RollingStone.com Album Reviews"
+		title_url="http://www.koant.com/googlegadgets/rollingstone/rollingstone.html" 
+		description="Parses the RollingStone.com album reviews rss-feed and optionally shows the rating, review text &amp; album cover"
+		author="agookoi"
+		author_email="googlegadgets@koant.com" 
+		author_affiliation="personal"
+		author_location="Finland"
+		screenshot="http://www.koant.com/googlegadgets/rollingstone/rollingstone.png"
+		thumbnail="http://www.koant.com/googlegadgets/rollingstone/rollingstone_thmb.png"
+	    render_inline="never"
+	    scaling="true"
+	    height="200"
+	    scrolling="true"
+	    singleton="false"
+	>
+	<Require feature="analytics"/>	
+	</ModulePrefs>
+    <UserPref 
+    		name="bShowAlbumTitle" 
+    		display_name="Title?" 
+    		datatype="bool" 
+    		default_value="true"
+    	/>
+    <UserPref 
+    		name="bShowCover" 
+    		display_name="Cover?" 
+    		datatype="bool" 
+    		default_value="true"
+    	/>
+    <UserPref 
+    		name="bShowStars" 
+    		display_name="Stars?" 
+    		datatype="bool" 
+    		default_value="true"
+    	/>
+    <UserPref 
+    		name="bShowReviewText" 
+    		display_name="Review?" 
+    		datatype="bool" 
+    		default_value="true"
+    	/>
+	<UserPref name="iTitleFontSize" 
+	       display_name="Title size"
+	       datatype="enum"
+	       default_value="0.8">
+	    <EnumValue value="0.4" display_value="0.4em"/>
+	    <EnumValue value="0.45" display_value="0.45em"/>
+	    <EnumValue value="0.5" display_value="0.5em"/>
+	    <EnumValue value="0.55" display_value="0.55em"/>
+	    <EnumValue value="0.6" display_value="0.6em"/>
+	    <EnumValue value="0.65" display_value="0.65em"/>
+	    <EnumValue value="0.7" display_value="0.7em"/>
+	    <EnumValue value="0.75" display_value="0.75em"/>
+	    <EnumValue value="0.8" display_value="0.8em"/>
+	    <EnumValue value="0.85" display_value="0.85em"/>
+	    <EnumValue value="0.9" display_value="0.9em"/>
+	    <EnumValue value="0.95" display_value="0.95em"/>
+	    <EnumValue value="1" display_value="1.0em"/>
+	</UserPref>    	
+	<UserPref name="iReviewTextFontSize" 
+	       display_name="Review size"
+	       datatype="enum"
+	       default_value="0.6">
+	    <EnumValue value="0.4" display_value="0.4em"/>
+	    <EnumValue value="0.45" display_value="0.45em"/>
+	    <EnumValue value="0.5" display_value="0.5em"/>
+	    <EnumValue value="0.55" display_value="0.55em"/>
+	    <EnumValue value="0.6" display_value="0.6em"/>
+	    <EnumValue value="0.65" display_value="0.65em"/>
+	    <EnumValue value="0.7" display_value="0.7em"/>
+	    <EnumValue value="0.75" display_value="0.75em"/>
+	    <EnumValue value="0.8" display_value="0.8em"/>
+	    <EnumValue value="0.85" display_value="0.85em"/>
+	    <EnumValue value="0.9" display_value="0.9em"/>
+	    <EnumValue value="0.95" display_value="0.95em"/>
+	    <EnumValue value="1" display_value="1.0em"/>
+	</UserPref>    	
+    <Content type="html">
+		<![CDATA[ 
+		<link 
+			rel="stylesheet" 
+			type="text/css" 
+			href="http://www.koant.com/googlegadgets/rollingstone/rollingstone.css"
+		>
+		<div class="content" id="content__MODULE_ID__">
+		</div>
+        	<script type="text/javascript">
+        		// Track gadget usage with Analytics
+			_IG_Analytics("UA-787283-2", "/RollingStoneGoogleGadget");
+			
+			// Use the following with "event_name" to track different event types within a gadget
+			// This is useful to track how much some feature is used.
+			// _IG_Analytics("UA-787283-2", "/RollingStoneGoogleGadget/event_name");
+        	
+        		// Initialize global variables that need to be accessible 
+        		// to all functions
+			var prefs__MODULE_ID__ = null; 
+            	var bShowStars__MODULE_ID__ = null;
+            	var bShowCover__MODULE_ID__ = null;
+            	var bShowReviewText__MODULE_ID__ = null;   
+            	var bShowAlbumTitle__MODULE_ID__ = null; 
+            	var iTitleFontSize__MODULE_ID__ = null;        	            	
+            	var iReviewTextFontSize__MODULE_ID__ = null;
+            	var arrReview__MODULE_ID__ = new Array(); // This array has data of single review, temporary
+            	var arrReviews__MODULE_ID__ = new Array(); // This array has arrays of the above kind
+
+			// This is the base url of all images etc.
+            	var baseUrl = "http://www.koant.com/googlegadgets/rollingstone";
+			
+			//The RSS Feed url
+            	var sUrl = "http://www.rollingstone.com/rssxml/album_reviews.xml";
+			
+        		//This is the wrapper function to handle all processing
+            	function rollingstone__MODULE_ID__(){
+            		//Get a handle to the user preferences
+				prefs__MODULE_ID__ = new _IG_Prefs(__MODULE_ID__);
+				
+                	// Get the preferences
+                	// Should stars of album be shown
+                	bShowStars__MODULE_ID__ = prefs__MODULE_ID__.getBool("bShowStars");
+                	// Should art of album be shown
+                	bShowCover__MODULE_ID__ = prefs__MODULE_ID__.getBool("bShowCover");
+                	// Should review text of album be shown
+                	bShowReviewText__MODULE_ID__ = prefs__MODULE_ID__.getBool("bShowReviewText");
+                	// Should the album artist & Title be shown
+                	bShowAlbumTitle__MODULE_ID__ = prefs__MODULE_ID__.getBool("bShowAlbumTitle");
+                	
+                	//Get the font-sizes selected by user:
+                	iTitleFontSize__MODULE_ID__ =  prefs__MODULE_ID__.getString("iTitleFontSize");
+                	iReviewTextFontSize__MODULE_ID__ =  prefs__MODULE_ID__.getString("iReviewTextFontSize");
+
+                	// Track the preference usage with Analytics:
+                	trackPreferenceUsageWithAnalytics(bShowStars__MODULE_ID__, 
+                									bShowCover__MODULE_ID__,
+                									bShowReviewText__MODULE_ID__,
+                									bShowAlbumTitle__MODULE_ID__,
+                									iTitleFontSize__MODULE_ID__,
+                									iReviewTextFontSize__MODULE_ID__
+                									);
+                	
+				// Start the actual processing
+		    		// Extract and parse times from the xml file. 
+             	_IG_FetchXmlContent(sUrl, function (response){
+             		processPhase1__MODULE_ID__(response);
+             	});    				
+            	} // function rollingstone__MODULE_ID__()
+            	
+         	function processPhase1__MODULE_ID__(response) {
+                  if (response == null 
+                  	|| typeof(response) != "object" 
+                  	|| response.firstChild == null) {
+                  	_gel("content__MODULE_ID__").innerHTML = 
+                  		"<i>The Rolling Stone RSS Feed is unavailable at " 
+                  		+ sUrl 
+                  		+ ". If the problem persists, please contact the author of this module. </i>";
+                      return;
+                   }
+                   
+                   // Get a list of the <item> element nodes in the file
+                   var itemList = response.getElementsByTagName("item");
+                   
+                   // Loop through all <item> nodes
+                   for (var i = 0; i < itemList.length ; i++) { 
+                   	
+                   	// Re-Initialize the array 
+                   	arrReview__MODULE_ID__ = new Array();
+                   	
+                     	// For each <item> node, get child nodes.
+                   	var nodeList = itemList.item(i).childNodes;
+        
+                     	// Loop through child nodes. Extract data from the text nodes
+                     	for (var j = 0; j < nodeList.length ; j++) {
+                     		
+                     		var node = nodeList.item(j);
+                     		
+                       	if(!node.hasChildNodes()){
+                       		// Skip this element
+                          	continue;
+                        	}
+                        	else if(node.firstChild.nodeValue == null){
+                        		// Skip this element
+                            	continue;
+                        	}
+                        	
+
+						// <title>
+						// Matthew Friedberger -
+						// Winter Women / Holy Ghost Language School.
+						// </title>
+                        	if (node.nodeName == "title") {
+							arrReview__MODULE_ID__["title"]=node.firstChild.nodeValue;
+                        	}
+                        	
+                        	// <link> http://www.rollingstone.com/reviews/album/10892112/review/11111773/winter_women__holy_ghost_language_school?source=album_reviews_rssfeed</link>
+                        	if (node.nodeName == "link") {
+							arrReview__MODULE_ID__["link"]=node.firstChild.nodeValue;
+                        	}
+                        	
+                        	// <content:encoded>
+                        	// If art or stars or review text need to be shown, then go here
+                        	if (bShowCover__MODULE_ID__ || bShowStars__MODULE_ID__ || bShowReviewText__MODULE_ID__){
+	                        	if (node.nodeName == "description") {
+								var childNodesX = node.childNodes;
+								for (var cdataj = 0; cdataj <  childNodesX.length; cdataj++) {
+								   	var childNodeX = childNodesX.item(cdataj);
+								   	if (childNodeX.nodeName == "#cdata-section") {
+								   		var content = childNodeX.nodeValue;
+					             		if (bShowCover__MODULE_ID__ ) { arrReview__MODULE_ID__["cover"] = extractCoverUrlOfReview__MODULE_ID__(content); }
+					             		if (bShowStars__MODULE_ID__ ) { arrReview__MODULE_ID__["stars"] = extractStarsOfReview__MODULE_ID__(content); }
+					             		if (bShowReviewText__MODULE_ID__ ) { arrReview__MODULE_ID__["review"] = extractReviewOfReview__MODULE_ID_(content); }
+								   	}
+								}
+	                        	}
+                        	}
+					} // for (var j = 0; j < nodeList.length ; j++) Loop through child nodes. Extract data from the text nodes
+
+					// Add the found review to reviews array					
+					arrReviews__MODULE_ID__.push(arrReview__MODULE_ID__);
+					
+				} // for (var i = 0; i < itemList.length ; i++) Loop through all <teatteri> nodes
+				
+				// After all data from the xml file is processed 
+				// & stored in the global array arrReviews__MODULE_ID__
+				// then display
+	             processPhase2__MODULE_ID__();
+
+			}
+             
+             function processPhase2__MODULE_ID__(){	
+				// Output all gathered data of reviews:
+				var html = "";
+				for(var y=0; y<arrReviews__MODULE_ID__.length; y++){
+					html += "<div class='review'>";
+
+					var arrReview = arrReviews__MODULE_ID__[y];
+					
+					if (bShowStars__MODULE_ID__ || bShowCover__MODULE_ID__ || bShowAlbumTitle__MODULE_ID__ ){
+						html += "<p class='top'>";
+					} 
+
+					if (bShowCover__MODULE_ID__ ) {
+						// Anchor with image
+	                   	html += "<a class='cover' target='_parent' href='" + arrReview["link"] + "'>";
+						html += arrReview["cover"];
+						html += "</a>";
+					}
+					if (bShowAlbumTitle__MODULE_ID__ ) {
+						// Anchor with text
+	                   	html += "<a class='title' href='" + arrReview["link"] + "' style='font-size:" + iTitleFontSize__MODULE_ID__ + "em;'>";
+	                   	html += arrReview["title"];
+	                   	html += "</a>";
+					}
+                   	if (bShowStars__MODULE_ID__ ) {
+                   		// General image
+						html += "<img class='stars' src='" + baseUrl + "/images/";
+						if(arrReview["stars"]!="notrated" && arrReview["stars"]!="nostars"){
+							html += arrReview["stars"] + "stars.gif' alt='" + arrReview["stars"] + "stars' />"; 
+						}
+						else if(arrReview["stars"] == "notrated"){
+							html += arrReview["stars"] + ".gif' alt='Not Rated' />"; 
+						}
+						else if(arrReview["stars"] == "nostars"){
+							html += arrReview["stars"] + "stars.gif' alt='No Stars' />"; 
+						}
+						else{
+							html += "unknown.gif' alt='Unknown value' />"; 
+						}
+                   	}
+					if (bShowStars__MODULE_ID__ || bShowCover__MODULE_ID__ || bShowAlbumTitle__MODULE_ID__ ){
+						html += "</p>"; // class='top'
+					} 
+                   	
+                   	if (bShowReviewText__MODULE_ID__ ) {
+                   		//Paragraph of text
+						html += "<p class='reviewText' style='font-size:" + iReviewTextFontSize__MODULE_ID__ + "em;'>";					
+						html += arrReview["review"];
+						html += "</p>";
+                   	}
+                   	html += "</div>"; //class='review'
+				}
+                 
+                	// Display HTML string in <div>
+                	_gel("content__MODULE_ID__").innerHTML = html; 
+             }
+             
+			function extractCoverUrlOfReview__MODULE_ID__(sAll){
+	        		// <img width="54" height="54" border="0" src="http://image.listen.com/img/54x54/5/5/1/4/864155_54x54.jpg" alt="Photo"></img>
+			   	var re = new RegExp("(.img.*..img.)");
+			   	var m = re.exec(sAll);
+			   	if (m == null) {
+			   		// Didn't find what we we're looking for.
+			        	//alert("Problem extracting img tag.");
+			        	return "null";
+			   	} else {
+			   		// We found what we were lookin for, return it.
+			       	return m[0];
+			    }
+			}
+			
+			function extractStarsOfReview__MODULE_ID__(sAll){
+				// Extract 3.5 Stars 0 - 5 Stars, 1 Stars
+
+			   	var re = new RegExp("([0-5]{1}[\.]?[5]?)( Stars)");
+			   	var m = re.exec(sAll);
+			   	if (m == null) {
+			   		// Didn't find what we we're looking for.
+			        	//alert("Problem extracting stars from content.");
+			        	return "null";
+			   	} else {
+			   		// We found what we were lookin for, return it.
+			       	return m[1];
+			    }
+			}
+			
+			function extractReviewOfReview__MODULE_ID_(sAll){
+				//<b>Review: </b>
+				//Friedberger's double-disc solo debut is as overstuffed and
+				//all-over-the-place as his work with Fiery Furnaces would indicate:
+				//twenty-nine messy pop collages,...
+				//</td>
+
+				var arr = new Array();
+				arr = sAll.split("<b>Review: </b>");
+				
+				var arr2 = new Array();
+				arr2 = arr[1].split("</td>");
+				
+				return arr2[0];				
+				
+			}
+			
+                	// Track the preference usage with Analytics:
+              function trackPreferenceUsageWithAnalytics(bShowStars, 
+                									bShowCover,
+                									bShowReviewText,
+                									bShowAlbumTitle,
+                									iTitleFontSize,
+                									iReviewTextFontSize
+                									){
+              	
+				// Use the following with "event_name" to track different event types within a gadget
+				// This is useful to track how much some feature is used.
+				// _IG_Analytics("UA-787283-2", "/RollingStoneGoogleGadget/event_name");
+				
+				// Let's construct the event name dynamically:
+				var event = "";
+				event = "bShowStars=" + bShowStars 
+					+ "&amp;bShowCover=" + bShowCover 
+					+ "&amp;bShowReviewText=" + bShowReviewText 
+					+ "&amp;bShowAlbumTitle=" + bShowAlbumTitle 
+					+ "&amp;iTitleFontSize=" + iTitleFontSize
+					+ "&amp;iReviewTextFontSize=" + iReviewTextFontSize;
+				
+				_IG_Analytics("UA-787283-2", "/RollingStoneGoogleGadget/" + event);
+              	
+              }
+			
+	        	
+	        document.body.onload = rollingstone__MODULE_ID__();
+        
+        </script>
+     ]]>
+  </Content> 
+  
+</Module>

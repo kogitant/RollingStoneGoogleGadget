@@ -1,0 +1,56 @@
+@CHARSET "UTF-8";
+/* The content of the module is positioned with divs */
+div{
+	position:relative;
+	float:left;
+	width:100%;
+	}
+
+/* The content div contains all the review divs */
+div.content{
+	padding-bottom:5px;
+	}
+
+/* The review div contains all the elements of a review */
+/* The gadget consists of multiple review divs */
+div.review{
+	margin-bottom:5px;
+	}
+
+a{
+	position:relative;
+	float:inline;
+}
+a.cover{
+	}
+a.title{
+}
+
+img{
+	position:relative;
+	float:left;
+}
+
+img.stars{
+	}
+	
+	
+p{
+	margin:0px;
+	padding:0px;
+	}
+/* This paragraph contains the cover, title and stars */	
+p.top{
+	}
+/* This paragraph in the div.review is the review text */
+p.reviewText{
+	position:relative;
+	float:left;
+	clear:both;
+	text-align:left;
+	vertical-align:top;
+	padding:0px;
+	margin:0px;
+	font-size:0.7em;
+	width:100%;
+	}
